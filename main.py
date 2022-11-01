@@ -47,7 +47,6 @@ def get_analysis():
                         names = ['avepauseduratin','avelongpause','speakingtot','avenumberofwords','articulationrate','inpro','f1norm','mr','q25',
                                 'q50','q75','std','fmax','fmin','vowelinx1','vowelinx2','formantmean','formantstd','nuofwrds','npause','ins',
                                 'fillerratio','xx','xxx','totsco','xxban','speakingrate'],na_values='?')
-    scoreMLdataset=df.drop(['xxx','xxban'], axis=1)
     #scoreMLdataset.to_csv(pa7, header=False,index = False)
     newMLdataset=df.drop(['avelongpause','speakingtot','avenumberofwords','inpro','f1norm','mr','q25',
                                 'q50','q75','std','fmax','fmin','vowelinx1','vowelinx2','nuofwrds','ins',
@@ -100,7 +99,8 @@ def process_mp3(file_path):
     query = f'ffmpeg -i {file_path} -vn -ar 32000 -ac 2 -b:a 32k "temp2.wav"'
     os.system(query)
 
-uploaded_file = st.file_uploader("Choose a file")
+st.caption('Currently supports only .wav file')
+uploaded_file = st.file_uploader("Upload an audio clip to analyse")
 
 if uploaded_file is not None:
     # To read file as bytes:
@@ -119,3 +119,34 @@ if uploaded_file is not None:
     df['fluency'] = fluency.tolist()
     st.dataframe(df)
     os.remove('temp2.wav')
+    df2 = {'fluency':'','rateofspeaking':'','usage of fillers':'','pause duration':''}
+    fluency = fluency.tolist()[0]
+    if fluency[1] > .8:
+        df2['fluency'] = 'high'
+    else:
+        label = np.argmax(fluency)
+        if label == 0:
+            df2['fluency'] = 'low'
+        elif label == 1:
+            df2['fluency'] = 'intermediate'
+        elif label == 2:
+            df2['fluency'] = 'high'       
+    if df['articulationrate'][0] >=4.3 and df['articulationrate'][0] <= 4.6:
+        df2['rateofspeaking'] = 'normal'
+    elif df['articulationrate'][0] < 4.3:
+        df2['rateofspeaking'] = 'slow'
+    elif df['articulationrate'][0] > 4.6:
+        df2['rateofspeaking'] = 'fast'
+    if df['fillerratio'][0] >10:
+        df2['usage of fillers'] = 'high'
+    else:
+        df2['usage of fillers'] = 'normal'    
+    if df['avepauseduratin'][0] >= .55 and df['avepauseduratin'][0] <= .6:
+        df2['pause duration'] = 'normal'
+    elif df['avepauseduratin'][0] < .55:
+        df2['pause duration'] = 'less'
+    elif df['avepauseduratin'][0] > .6:
+        df2['pause duration'] = 'more'    
+    st.header('Categorised csv') 
+    df3 = pd.DataFrame([df2])
+    st.dataframe(df3)
