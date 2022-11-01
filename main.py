@@ -29,14 +29,12 @@ from pandas import read_csv
 
 def get_analysis():
     pa0 = 'temp2.wav'
-    s3 = boto3.client("s3",aws_access_key_id='AKIAYBKXK4CZNJMFCTXC',aws_secret_access_key='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')
-    s3.download_file(Bucket="newton-data-science", Key="storage/models/praat/MLTRNL.praat", Filename="MLTRNL.praat")
-    pa8='MLTRNL.praat'
-    result_array = np.empty((0, 100))
     files = glob.glob(pa0)
-    print(files)
+    pa00 = files[0].replace('temp2.wav',os.getcwd())
+    pa8= 'MLTRNL.praat'
+    result_array = np.empty((0, 100))
     result_array = np.empty((0, 27))
-    objects= run_file(pa8, -20, 2, 0.3, "yes", 'temp2.wav', '', 80, 400, 0.01, capture_output=True)
+    objects= run_file(pa8, -20, 2, 0.3, "yes", pa0,pa00, 80, 400, 0.01, capture_output=True)
     #print (objects[0]) # This will print the info from the sound object, and objects[0] is a parselmouth.Sound object
     z1=( objects[1]) # This will print the info from the textgrid object, and objects[1] is a parselmouth.Data object with a TextGrid inside
     z3=z1.strip().split()
@@ -54,6 +52,7 @@ def get_analysis():
     newMLdataset=df.drop(['avelongpause','speakingtot','avenumberofwords','inpro','f1norm','mr','q25',
                                 'q50','q75','std','fmax','fmin','vowelinx1','vowelinx2','nuofwrds','ins',
                                 'xx','xxx','totsco','xxban','speakingrate'], axis=1)
+    os.remove('temp.csv')
     return newMLdataset
 
 def feature_extraction(file_name):
@@ -119,3 +118,4 @@ if uploaded_file is not None:
     fluency = svm_clf.predict_proba(audio_as_np)
     df['fluency'] = fluency.tolist()
     st.dataframe(df)
+    os.remove('temp2.wav')
