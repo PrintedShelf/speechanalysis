@@ -164,6 +164,7 @@ if audio_bytes:
     write('temp.wav', rate, data)
     st.audio(audio_bytes, format='audio/wav')
     process_mp3('temp.wav')
+    st.download_button(label='Download this clip', data=audio_bytes, file_name='recording.wav', mime='audio/wav')
     os.remove('temp.wav')
     try:
         operate_audio()
