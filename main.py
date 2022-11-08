@@ -10,12 +10,15 @@ if not sys.warnoptions:
 import parselmouth
 from parselmouth.praat import call, run_file
 import glob
+from scipy.io.wavfile import read, write
+
 import librosa
 import errno
 import csv,sys
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import time
+import io
 import os
 from subprocess import check_output
 import queue
@@ -23,6 +26,7 @@ import soundfile as sf
 import _thread  
 import pickle
 from scipy.stats import binom
+from audio_recorder_streamlit import audio_recorder
 from scipy.stats import ks_2samp
 from scipy.stats import ttest_ind
 from pandas import read_csv
@@ -99,18 +103,7 @@ def process_mp3(file_path):
     query = f'ffmpeg -i {file_path} -vn -ar 32000 -ac 2 -b:a 32k "temp2.wav"'
     os.system(query)
 
-st.caption('Currently supports only .wav file')
-uploaded_file = st.file_uploader("Upload an audio clip to analyse")
-
-if uploaded_file is not None:
-    # To read file as bytes:
-    audio_data, audio_samplerate = sf.read(uploaded_file)
-    sf.write('temp.wav', audio_data, audio_samplerate)
-    #audio.export(uploaded_file,format=file_type)    
-    #audio = pydub.AudioSegment.from_wav(uploaded_file)
-    process_mp3('temp.wav')
-    st.audio(uploaded_file.getvalue(), format='audio/wav')
-    os.remove('temp.wav')
+def operate_audio():
     import pickle
     svm_clf = pickle.load(open('Fluency_using_SVM','rb'))
     df = get_analysis()
@@ -150,3 +143,31 @@ if uploaded_file is not None:
     st.header('Categorised csv') 
     df3 = pd.DataFrame([df2])
     st.dataframe(df3)
+
+st.caption('Currently supports only .wav file')
+uploaded_file = st.file_uploader("Upload an audio clip to analyse")
+if uploaded_file is not None:
+# To read file as bytes:
+    audio_data, audio_samplerate = sf.read(uploaded_file)
+    sf.write('temp.wav', audio_data, audio_samplerate)
+    #audio.export(uploaded_file,format=file_type)    
+    #audio = pydub.AudioSegment.from_wav(uploaded_file)
+    process_mp3('temp.wav')
+    st.audio(uploaded_file.getvalue(), format='audio/wav')
+    os.remove('temp.wav')
+    operate_audio()
+    
+st.write('Record audio (min 10 seconds)')
+audio_bytes = audio_recorder()
+if audio_bytes:
+    rate, data = read(io.BytesIO(audio_bytes))
+    write('temp.wav', rate, data)
+    st.audio(audio_bytes, format='audio/wav')
+    process_mp3('temp.wav')
+    os.remove('temp.wav')
+    try:
+        operate_audio()
+    except:
+        st.write('Please try again and make sure minimum duration is 10 seconds :)')
+        os.remove('temp2.wav')
+    
