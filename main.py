@@ -114,7 +114,7 @@ def operate_audio():
     os.remove('temp2.wav')
     df2 = {'fluency':'','rateofspeaking':'','usage of fillers':'','pause duration':''}
     fluency = fluency.tolist()[0]
-    if fluency[1] > .8:
+    if fluency[1] > .65:
         df2['fluency'] = 'high'
     else:
         label = np.argmax(fluency)
@@ -124,13 +124,13 @@ def operate_audio():
             df2['fluency'] = 'intermediate'
         elif label == 2:
             df2['fluency'] = 'high'       
-    if df['articulationrate'][0] >=4.3 and df['articulationrate'][0] <= 4.6:
+    if df['articulationrate'][0] >=4.3 and df['articulationrate'][0] <= 4.9:
         df2['rateofspeaking'] = 'normal'
     elif df['articulationrate'][0] < 4.3:
         df2['rateofspeaking'] = 'slow'
-    elif df['articulationrate'][0] > 4.6:
+    elif df['articulationrate'][0] > 4.9:
         df2['rateofspeaking'] = 'fast'
-    if df['fillerratio'][0] >10:
+    if df['fillerratio'][0] >15:
         df2['usage of fillers'] = 'high'
     else:
         df2['usage of fillers'] = 'normal'    
