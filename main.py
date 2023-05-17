@@ -1,8 +1,6 @@
 import streamlit as st
 import soundfile as sf
 import os
-import shutil
-import boto3
 import sys
 import warnings
 if not sys.warnoptions:
@@ -21,10 +19,8 @@ import time
 import io
 import os
 from subprocess import check_output
-import queue
 import soundfile as sf
-import _thread  
-import pickle
+
 from scipy.stats import binom
 from audio_recorder_streamlit import audio_recorder
 from scipy.stats import ks_2samp
@@ -171,4 +167,3 @@ if audio_bytes:
     except:
         st.write('Please try again and make sure minimum duration is 10 seconds :)')
         os.remove('temp2.wav')
-    
